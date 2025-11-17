@@ -1,0 +1,22 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <VBox width="100%" renderType="Bare">
+        <Label text="Loại phép:*" />
+        <Input id="leaveTypeInput" placeholder="Chọn loại phép" />
+
+        <Label text="Ngày bắt đầu:*" />
+        <DatePicker id="startDatePicker" placeholder="Ngày bắt đầu" />
+
+        <Label text="Ngày kết thúc:*" />
+        <DatePicker id="endDatePicker" placeholder="Ngày kết thúc" />
+
+        <Label text="Thời gian nghỉ:*" />
+        <RadioButtonGroup id="timeRadioGroup" columns="3">
+            <RadioButton text="Full Day" selected="true" />
+            <RadioButton text="Morning" />
+            <RadioButton text="Afternoon" />
+        </RadioButtonGroup>
+
+        <Label text="Lý do xin nghỉ:*" />
+        <Input id="reasonInput" placeholder="Lý do xin nghỉ" width="100%" />
+    </VBox>
+</core:FragmentDefinition>

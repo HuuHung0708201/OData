@@ -1,0 +1,96 @@
+<core:FragmentDefinition
+    xmlns:form="sap.ui.layout.form"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <Dialog
+        id="createRequestDialog"
+        afterClose="onAfterCloseCreateRequest"
+        title="Create Leave Request"
+    >
+        <content>
+            <form:SimpleForm
+                editable="true"
+                binding="{form>/}"
+            >
+                <Label
+                    text="Loại phép"
+                    required="true"
+                />
+                <ComboBox
+                    required="true"
+                    items="{master>/LeaveType}"
+                    selectedKey="{form>LeaveType}"
+                >
+                    <items>
+                        <core:Item
+                            key="{master>FieldKey}"
+                            text="{master>FieldValue}"
+                        />
+                    </items>
+                </ComboBox>
+
+                <Label
+                    text="Từ ngày"
+                    required="true"
+                />
+                <DatePicker
+                    required="true"
+                    valueFormat="yyyyMMdd"
+                    displayFormat="dd.MM.yyyy"
+                    value="{form>StartDate}"
+                />
+
+                <Label
+                    text="Đến ngày"
+                    required="true"
+                />
+                <DatePicker
+                    required="true"
+                    valueFormat="yyyyMMdd"
+                    displayFormat="dd.MM.yyyy"
+                    value="{form>EndDate}"
+                />
+
+                <Label
+                    text="Thời gian nghỉ"
+                    required="true"
+                />
+                <RadioButtonGroup
+                    buttons="{master>/TimeSlot}"
+                    columns="4"
+                    selectedIndex="{form>TimeSlotIndex}"
+                    select="onRadioSelectionChange"
+                >
+                    <buttons>
+                        <RadioButton text="{master>FieldValue}" />
+                    </buttons>
+                </RadioButtonGroup>
+
+                <Label
+                    text="Lý do"
+                    required="true"
+                />
+                <TextArea
+                    required="true"
+                    rows="3"
+                    growingMaxLines="3"
+                    value="{form>Reason}"
+                />
+            </form:SimpleForm>
+        </content>
+        <beginButton>
+            <Button
+                text="Submit"
+                type="Emphasized"
+                press="onSubmitCreateRequest"
+            />
+        </beginButton>
+        <endButton>
+            <Button
+                text="Cancel"
+                press="onCloseCreateRequest"
+            />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

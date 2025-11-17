@@ -1,0 +1,265 @@
+<mvc:View
+    xmlns:core="sap.ui.core"
+    controllerName="base.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:svm="sap.ui.comp.smartvariants"
+    xmlns:table="sap.ui.table"
+>
+    <f:DynamicPage
+        id="dynamicPage"
+        showFooter="true"
+    >
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:heading>
+                    <svm:SmartVariantManagement
+                        id="svm"
+                        showExecuteOnSelection="true"
+                    />
+                </f:heading>
+                <f:expandedContent>
+                    <Label
+                        id="expandedLabel"
+                        text="No filters active"
+                    />
+                </f:expandedContent>
+                <f:snappedContent>
+                    <Label
+                        id="snappedLabel"
+                        text="No filters active"
+                    />
+                </f:snappedContent>
+            </f:DynamicPageTitle>
+        </f:title>
+        <f:header>
+            <f:DynamicPageHeader>
+                <f:content>
+                    <fb:FilterBar
+                        id="filterBar"
+                        persistencyKey="EmployeeTable"
+                        useToolbar="false"
+                        search="onSearch"
+                        filterChange="onFilterChange"
+                        afterVariantLoad="onAfterVariantLoad"
+                    >
+                        <fb:filterGroupItems>
+                            <fb:FilterGroupItem
+                                name="StartDate"
+                                label="Ngày bắt đầu"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <DatePicker
+                                        name="StartDate"
+                                        displayFormat="dd.MM.yyyy"
+                                        valueFormat="yyyyMMdd"
+                                    />
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                            <fb:FilterGroupItem
+                                name="LeaveType"
+                                label="Loại phép"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <ComboBox
+                                        name="LeaveType"
+                                        selectionChange="onSelectionChange"
+                                    >
+                                        <items>
+                                            <core:Item
+                                                key="01"
+                                                text="Nghỉ ốm"
+                                            />
+                                            <core:Item
+                                                key="02"
+                                                text="Nghỉ việc riêng"
+                                            />
+                                            <core:Item
+                                                key="03"
+                                                text="Nghỉ thai sản"
+                                            />
+                                        </items>
+                                    </ComboBox>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                            <fb:FilterGroupItem
+                                name="Status"
+                                label="Trạng thái"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <ComboBox
+                                        name="Status"
+                                        selectionChange="onSelectionChange"
+                                    >
+                                        <items>
+                                            <core:Item
+                                                key="01"
+                                                text="Mới"
+                                            />
+                                            <core:Item
+                                                key="02"
+                                                text="Đã duyệt"
+                                            />
+                                            <core:Item
+                                                key="03"
+                                                text="Đã từ chối"
+                                            />
+                                        </items>
+                                    </ComboBox>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                        </fb:filterGroupItems>
+                    </fb:FilterBar>
+                </f:content>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <table:Table
+                id="table"
+                rowActionCount="1"
+                rowSelectionChange="onRowSelectionChange"
+                rows="{table>/rows}"
+            >
+                <table:extension>
+                    <OverflowToolbar class="sapMTBHeader-CTX">
+                        <Title text="Leave Request" />
+                        <ToolbarSpacer />
+                        <Button
+                            text="Add"
+                            tooltip="Add"
+                            type="Emphasized"
+                            icon="sap-icon://add"
+                            press="onOpenCreateRequest"
+                        />
+                        <Button
+                            text="Edit"
+                            tooltip="Edit"
+                            type="Emphasized"
+                            icon="sap-icon://edit"
+                            press="onOpenEditRequest"
+                            enabled="{= ${table>/selectedIndices}.length === 1 }"
+                        />
+                        <Button
+                            text="Delete"
+                            tooltip="Delete"
+                            type="Reject"
+                            icon="sap-icon://delete"
+                            enabled="{= ${table>/selectedIndices}.length === 1 }"
+                            press="onDeleteRequest"
+                        />
+                        <ToolbarSeparator />
+                        <Button
+                            icon="sap-icon://excel-attachment"
+                            tooltip="Export to Excel"
+                        />
+                    </OverflowToolbar>
+                </table:extension>
+                <table:noData>
+                    <IllustratedMessage
+                        illustrationType="sapIllus-NoSearchResults"
+                        enableVerticalResponsiveness="true"
+                    />
+                </table:noData>
+                <table:columns>
+                    <table:Column
+                        id="RequestId"
+                        sortProperty="RequestId"
+                        filterProperty="RequestId"
+                    >
+                        <table:label>
+                            <Label text="Mã đơn nghỉ" />
+                        </table:label>
+                        <table:template>
+                            <ObjectIdentifier
+                                title="{
+                                    path: 'table>RequestId'
+                                }"
+                                titleActive="true"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="Loại phép" />
+                        </table:label>
+                        <table:template>
+                            <Text text="{table>LeaveType}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="Ngày bắt đầu nghỉ" />
+                        </table:label>
+                        <table:template>
+                            <Text
+                                text="{
+                                    path: 'table>StartDate',
+                                    formatter: '.formatter.formatDate'
+                                }"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="Ngày kết thúc nghỉ" />
+                        </table:label>
+                        <table:template>
+                            <Text
+                                text="{
+                                    path: 'table>EndDate',
+                                    formatter: '.formatter.formatDate'
+                                }"
+                            />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="TimeSlot" />
+                        </table:label>
+                        <table:template>
+                            <Text text="{table>TimeSlot}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="Lý do xin nghỉ" />
+                        </table:label>
+                        <table:template>
+                            <Text text="{table>Reason}" />
+                        </table:template>
+                    </table:Column>
+                    <table:Column>
+                        <table:label>
+                            <Label text="Trạng thái" />
+                        </table:label>
+                        <table:template>
+                            <ObjectStatus
+                                text="{
+                                    path: 'table>Status', formatter: '.formatStatusText'
+                                }"
+                                state="{
+                                    path: 'table>Status', formatter: '.formatStatusState'
+                                }"
+                                inverted="true"
+                            />
+                        </table:template>
+                    </table:Column>
+                </table:columns>
+                <table:rowActionTemplate>
+                    <table:RowAction>
+                        <table:RowActionItem type="Navigation" />
+                    </table:RowAction>
+                </table:rowActionTemplate>
+            </table:Table>
+        </f:content>
+        <f:footer />
+    </f:DynamicPage>
+</mvc:View>

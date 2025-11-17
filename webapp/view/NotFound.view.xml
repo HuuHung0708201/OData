@@ -1,0 +1,18 @@
+<mvc:View
+    controllerName="base.controller.NotFound"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+>
+    <IllustratedMessage
+        illustrationSize="Auto"
+        illustrationType="sapIllus-PageNotFound"
+        enableVerticalResponsiveness="true"
+    >
+        <additionalContent>
+            <Button
+                text="Back to Home"
+                press="onPressed"
+            />
+        </additionalContent>
+    </IllustratedMessage>
+</mvc:View>
