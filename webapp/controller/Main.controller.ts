@@ -599,6 +599,14 @@ export default class Main extends Base {
     const item = <LeaveRequestItem>this.table.getContextByIndex(indices[0])?.getObject();
 
     const key = oDataModel.createKey("/LeaveRequestSet", item);
+    
+    const isValid = this.onValidateBeforeSubmit();
+
+    this.dateRangePickers = [];
+
+    if (!isValid) {
+      return;
+    }
 
     dialog.setBusy(true);
     oDataModel.update(

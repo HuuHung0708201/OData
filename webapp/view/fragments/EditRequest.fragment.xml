@@ -21,6 +21,8 @@
                     required="true"
                     items="{master>/LeaveType}"
                     selectedKey="{form>LeaveType}"
+                    change="onChangeValue"
+                    fieldGroupIds="FormField"
                 >
                     <items>
                         <core:Item
@@ -39,6 +41,8 @@
                     valueFormat="yyyyMMdd"
                     displayFormat="dd.MM.yyyy"
                     value="{form>StartDate}"
+                    change="onChangeValue"
+                    fieldGroupIds="FormField"
                 />
 
                 <Label
@@ -50,6 +54,8 @@
                     valueFormat="yyyyMMdd"
                     displayFormat="dd.MM.yyyy"
                     value="{form>EndDate}"
+                    change="onChangeValue"
+                    fieldGroupIds="FormField"
                 />
 
                 <Label
@@ -77,6 +83,8 @@
                     rows="3"
                     growingMaxLines="3"
                     value="{form>Reason}"
+                    change="onChangeValue"
+                    fieldGroupIds="FormField"
                 />
             </form:SimpleForm>
         </content>

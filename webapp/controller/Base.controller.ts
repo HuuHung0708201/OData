@@ -153,7 +153,9 @@ export default class Base extends Controller {
       }
 
       return _container.getControlsByFieldGroupId(groupId).filter((control) => {
-        const isFormControl = control.isA(<string[]>types);
+        // const isFormControl = control.isA(<string[]>types);
+        // const isFormControl = types.some(type => this.isControl(control, type));
+        const isFormControl = types.reduce((acc, type) => acc || this.isControl(control, type), false);
 
         const isVisible = control.getVisible();
 
