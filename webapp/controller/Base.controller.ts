@@ -15,6 +15,21 @@ import type Component from "../Component";
 /**
  * @namespace base.controller
  */
+
+// Khai báo các biến và phương thức dùng chung cho các controller khác kế thừa
+const formControlTypes = [
+  "sap.m.Input",
+  "sap.m.Select",
+  "sap.m.ComboBox",
+  "sap.m.DatePicker",
+  "sap.m.TimePicker",
+  "sap.m.CheckBox",
+  "sap.m.Switch",
+  "sap.m.TextArea",
+] as const;
+
+type FormControlType = (typeof formControlTypes)[number];
+
 export default class Base extends Controller {
   public formatter = Formatter;
   public dataType = {};
@@ -121,4 +136,29 @@ export default class Base extends Controller {
 
     void this.getRouter().getTargets()?.display(target);
   }
+
+  // Lấy tất cả các control trong một field group cụ thể, lọc theo kiểu và chỉ những control đang hiển thị.
+  protected getFormControlsByFieldGroup<T extends Control> (
+    props: {
+      groupId: string | string[];
+      container?: Control;
+      types?: readonly FormControlType[];
+    }) {
+      const { groupId, container, types = formControlTypes } = props;
+
+      const _container = container ?? this.getView();
+
+      if (!_container) {
+        return [];
+      }
+
+      return _container.getControlsByFieldGroupId(groupId).filter((control) => {
+        const isFormControl = control.isA(<string[]>types);
+
+        const isVisible = control.getVisible();
+
+        return isFormControl && isVisible;
+      }) as T[];
+    }
+
 }

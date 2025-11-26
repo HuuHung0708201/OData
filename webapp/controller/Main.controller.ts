@@ -35,6 +35,8 @@ import type ODataModel from "sap/ui/model/odata/v2/ODataModel";
 import Table from "sap/ui/table/Table";
 import Base from "./Base.controller";
 import DateFormat from "sap/ui/core/format/DateFormat";
+import InputBase from "sap/m/InputBase";
+import type Event from "sap/ui/base/Event";
 
 /**
  * @namespace base.controller
@@ -489,6 +491,12 @@ export default class Main extends Base {
 
     const oDataModel = this.getModel<ODataModel>();
 
+    const isValid = this.onValidateBeforeSubmit();
+
+    if (!isValid) {
+      return;
+    }
+
     const { LeaveType, StartDate, EndDate, Reason, TimeSlot } = formData;
 
     dialog.setBusy(true);
@@ -656,6 +664,141 @@ export default class Main extends Base {
   // #endregion Event handlers
 
   // #region Validation
+
+  public onChangeValue (event: Event) {
+    try {
+      const control = event.getSource<InputBase>();
+
+      if (control.getVisible()) {
+        this.validateControl(control);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  private onValidateBeforeSubmit() {
+    const controls = this.getFormControlsByFieldGroup<InputBase>({
+      groupId: "FormField",
+      container: this.createRequestDiglog,
+    });
+
+    const isValid = this.validateControls(controls);
+
+    if (isValid) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private validateControls (controls: InputBase[]) {
+    let isValid = false;
+    let isError = false;
+
+    controls.forEach((control) => {
+      isError = this.validateControl(control);
+
+      isValid = isValid || isError;
+    });
+
+    return !isValid;
+  }
+
+  private validateControl (control: InputBase): boolean {
+    let isError = false;
+
+    this.setMessageState(control, {
+      message: "",
+      severity: "None",
+    });
+
+    let requiredError = false;
+    let outOfRangeError = false;
+    let dataRangeError = false;
+
+    let value: string = "";
+
+    switch (true) {
+      case this.isControl<Input>(control, "sap.m.Input"): {
+        value = control.getValue().trim();
+
+        if (!value && control.getRequired()) {
+          requiredError = true;
+        }
+
+        break;
+      }
+      case this.isControl<TextArea>(control, "sap.m.TextArea"): {
+        value = control.getValue().trim();
+
+        if (!value && control.getRequired()) {
+          requiredError = true;
+        }
+
+        break;
+      }
+      case this.isControl<DatePicker>(control, "sap.m.DatePicker"): {
+        value = control.getValue();
+
+        if (!value && control.getRequired()) {
+          requiredError = true;
+        } else if (value && !control.isValidValue()) {
+          outOfRangeError = true;
+        } else {
+          // Bổ sung kiểm tra ngày hợp lệ nếu cần
+        }
+
+        break;
+      }
+      case this.isControl<ComboBox>(control, "sap.m.ComboBox"): {
+        value = control.getSelectedKey();
+
+        const input = control.getValue().trim();
+
+        if (!value && input) {
+          outOfRangeError = true;
+        } else if (!value && control.getRequired()) {
+          requiredError = true;
+        }
+
+        break;
+      }
+      default: 
+        break;
+    }
+
+    if (requiredError) {
+      this.setMessageState(control, {
+        message: "Trường bắt buộc",
+        severity: "Error",
+      });
+
+      isError = true;
+    } else if (dataRangeError) {
+      this.setMessageState(control, {
+        message: "Ngày bắt đầu phải nằm trước ngày kết thúc.",
+        severity: "Error",
+      });
+
+      isError = true;
+    }
+
+    return isError;
+  }
+
+  private setMessageState (control: InputBase, 
+    options: {
+      message: string;
+      severity: keyof typeof ValueState;
+    }
+  ) {
+    const {message, severity} = options;
+
+    control.setValueState(severity);
+    control.setValueStateText?.(message);
+  }
+
   public onRadioSelectionChange(event: RadioButtonGroup$SelectEvent) {
     const control = event.getSource();
 
