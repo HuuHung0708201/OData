@@ -57,6 +57,8 @@ export default class Main extends Base {
   private createRequestDiglog: Dialog;
   private editRequestDiglog: Dialog;
 
+  private dateRangePickers: DatePicker[] = [];
+
   public override onInit(): void {
     this.view = <View>this.getView();
     this.router = this.getRouter();
@@ -493,6 +495,8 @@ export default class Main extends Base {
 
     const isValid = this.onValidateBeforeSubmit();
 
+    this.dateRangePickers = [];
+
     if (!isValid) {
       return;
     }
@@ -745,8 +749,27 @@ export default class Main extends Base {
           requiredError = true;
         } else if (value && !control.isValidValue()) {
           outOfRangeError = true;
-        } else {
-          // Bổ sung kiểm tra ngày hợp lệ nếu cần
+        } else if (value && control.isValidValue()) {
+          const existingIndex = this.dateRangePickers.findIndex(
+            dp => dp.getId() === control.getId()
+          );
+
+          if (existingIndex !== -1) {
+          // Thay thế control cũ
+            this.dateRangePickers[existingIndex] = control;
+          } else {
+            // Thêm mới nếu chưa có
+            this.dateRangePickers.push(control);
+          }
+
+          if (this.dateRangePickers.length !== 2) return true;
+
+          const tuNgay = this.dateRangePickers[0].getDateValue();
+          const denNgay = this.dateRangePickers[1].getDateValue();
+
+          if (tuNgay > denNgay) {
+            dataRangeError = true;
+          }
         }
 
         break;
@@ -777,7 +800,14 @@ export default class Main extends Base {
       isError = true;
     } else if (dataRangeError) {
       this.setMessageState(control, {
-        message: "Ngày bắt đầu phải nằm trước ngày kết thúc.",
+        message: "Từ ngày <= Đến ngày",
+        severity: "Error",
+      });
+
+      isError = true;
+    } else if (outOfRangeError) {
+      this.setMessageState(control, {
+        message: "Dữ liệu nhập không hợp lệ.",
         severity: "Error",
       });
 
