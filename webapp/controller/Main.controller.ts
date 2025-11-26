@@ -37,12 +37,14 @@ import Base from "./Base.controller";
 import DateFormat from "sap/ui/core/format/DateFormat";
 import InputBase from "sap/m/InputBase";
 import type Event from "sap/ui/base/Event";
+import type MessagePopover from "sap/m/MessagePopover";
+import Core from "sap/ui/core/Core";
 
 /**
  * @namespace base.controller
  */
 export default class Main extends Base {
-  private view: View;
+  private view: View | undefined;
   private router: Router;
   private table: Table;
   private layout: DynamicPage;
@@ -599,7 +601,7 @@ export default class Main extends Base {
     const item = <LeaveRequestItem>this.table.getContextByIndex(indices[0])?.getObject();
 
     const key = oDataModel.createKey("/LeaveRequestSet", item);
-    
+
     const isValid = this.onValidateBeforeSubmit();
 
     this.dateRangePickers = [];
@@ -728,8 +730,12 @@ export default class Main extends Base {
     let requiredError = false;
     let outOfRangeError = false;
     let dataRangeError = false;
+    let soSanhNgayHienTai = false;
 
     let value: string = "";
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
     switch (true) {
       case this.isControl<Input>(control, "sap.m.Input"): {
@@ -778,6 +784,12 @@ export default class Main extends Base {
           if (tuNgay > denNgay) {
             dataRangeError = true;
           }
+
+          if (tuNgay < today) {
+            soSanhNgayHienTai = true; // hoặc tạo flag riêng nếu muốn
+          } else if (denNgay < today) {
+            soSanhNgayHienTai = true; // hoặc tạo flag riêng nếu muốn
+          }
         }
 
         break;
@@ -816,6 +828,13 @@ export default class Main extends Base {
     } else if (outOfRangeError) {
       this.setMessageState(control, {
         message: "Dữ liệu nhập không hợp lệ.",
+        severity: "Error",
+      });
+
+      isError = true;
+    } else if (soSanhNgayHienTai) {
+      this.setMessageState(control, {
+        message: "Ngày đăng ký phải >= ngày hiện tại.",
         severity: "Error",
       });
 
