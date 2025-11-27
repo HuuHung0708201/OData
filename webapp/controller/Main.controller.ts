@@ -997,7 +997,7 @@ export default class Main extends Base {
 
                 groupName: { parts: [{ path: 'message>controlIds' }], formatter: this.getGroupName.bind(this) },
 
-                // activeTitle: { parts: [{ path: 'message>controlIds' }], formatter: this.isPositionable.bind(this) },
+                activeTitle: { parts: [{ path: 'message>controlIds' }], formatter: this.isPositionable.bind(this) },
 
                 type: "{message>type}",
 
