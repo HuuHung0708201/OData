@@ -37,9 +37,15 @@ import Base from "./Base.controller";
 import DateFormat from "sap/ui/core/format/DateFormat";
 import InputBase from "sap/m/InputBase";
 import type Event from "sap/ui/base/Event";
-import type MessagePopover from "sap/m/MessagePopover";
+import MessagePopover from "sap/m/MessagePopover";
 import Core from "sap/ui/core/Core";
-
+import MessageItem from "sap/m/MessageItem";
+import Element1 from "sap/ui/mdc/Element";
+import type Message from "sap/ui/core/message/Message";
+import type Control from "sap/ui/core/Control";
+import type Button from "sap/m/Button";
+import {ButtonType} from "sap/m/library";
+import type Model from "sap/ui/model/Model";
 /**
  * @namespace base.controller
  */
@@ -60,6 +66,12 @@ export default class Main extends Base {
   private editRequestDiglog: Dialog;
 
   private dateRangePickers: DatePicker[] = [];
+
+  // Format
+  private messageManager!: any;
+  private MP!: MessagePopover; // MessagePopover instance
+  private createDialog: Promise<any>;
+  private mangBatBuoc: boolean[] = [];
 
   public override onInit(): void {
     this.view = <View>this.getView();
@@ -471,6 +483,8 @@ export default class Main extends Base {
       );
 
       this.createRequestDiglog.open();
+
+      this.HamFormatLogThongBao();
     } catch (error) {
       console.log(error);
     }
@@ -498,6 +512,15 @@ export default class Main extends Base {
     const isValid = this.onValidateBeforeSubmit();
 
     this.dateRangePickers = [];
+
+    // Format cảnh báo - Start
+    this.mangBatBuoc = [];
+
+    let buttonCanhBao = this.getControlById<Button>("messagePopoverBtn");
+
+    buttonCanhBao.setVisible(true);
+
+    // Format cảnh báo - End
 
     if (!isValid) {
       return;
@@ -811,6 +834,12 @@ export default class Main extends Base {
         break;
     }
 
+    // Format mới - Start
+    this.buttonIconFormatter(requiredError);
+    this.buttonTypeFormatter(requiredError);
+    this.highestSeverityMessages(requiredError);
+    // Format mới - End
+
     if (requiredError) {
       this.setMessageState(control, {
         message: "Trường bắt buộc",
@@ -941,4 +970,177 @@ export default class Main extends Base {
     });
   }
   // #endregion Master data
+
+  // #region Format theo cảnh báo lỗi
+  public HamFormatLogThongBao(): void {
+    this.messageManager = Core.getMessageManager();
+
+    this.messageManager.removeAllMessages();
+
+    this.messageManager.registerObject(this.view?.byId("createRequestDialog"), true);
+
+    this.view?.setModel(this.messageManager.getMessageModel(), "message");
+
+    this.createMessagePopover();
+  }
+
+  // Tạo MessagePopover và gán behavior khi click vào message
+  private createMessagePopover(): void {
+    this.MP = new MessagePopover({
+        items: {
+            path: "message>/",
+
+            template: new MessageItem({
+                title: "{message>message}",
+
+                subtitle: "{message>additionalText}",
+
+                groupName: { parts: [{ path: 'message>controlIds' }], formatter: this.getGroupName.bind(this) },
+
+                // activeTitle: { parts: [{ path: 'message>controlIds' }], formatter: this.isPositionable.bind(this) },
+
+                type: "{message>type}",
+
+                description: "{message>message}"
+            })
+        },
+
+        groupItems: true
+    });
+
+    // Gắn MessagePopover vào nút trong Dialog
+    const oButton: any = this.view?.byId("messagePopoverBtn");
+
+    oButton.addDependent(this.MP);
+  }
+
+  // Tạo nhóm (group) cho các MessageItem trong MessagePopover
+  public getGroupName(controlId: string): string | undefined {
+    // Lấy control từ registry
+    const control = <Control | undefined>Element1.registry.get(controlId);
+
+    if (!control) {
+        return;
+    }
+
+    // Điều hướng lên parent theo đúng cấu trúc layout của bạn
+    const parent1 = control.getParent();                      // Ví dụ: FormElement
+    const parent2 = parent1?.getParent();                      // Ví dụ: FormContainer
+    const parent3 = parent2?.getParent();                      // Ví dụ: Form
+
+    const formSubtitle =(parent2 as any)?.getTitle?.()?.getText?.() ?? "";
+    const formTitle = (parent3 as any)?.getTitle?.() ?? "";
+
+    return `${formTitle}, ${formSubtitle}`;
+  }
+
+  // Điều hướng tới (scroll vào view) khi người dùng bấm vào lỗi
+  public isPositionable(controlId: string | undefined): boolean {
+    if (!controlId) {
+        return false;
+    }
+
+    const control = Element1.registry.get(controlId);
+
+    // Nếu control tồn tại và có trong DOM, cho phép navigate
+    return !!(control && control.getDomRef());
+  }
+
+  // Format type button - Start
+  public buttonTypeFormatter(requiredError: boolean): ButtonType {
+    let highestSeverity: ButtonType = ButtonType.Transparent;
+
+    if (requiredError) {
+      highestSeverity = ButtonType.Reject;
+    } else {
+      highestSeverity = ButtonType.Transparent;
+    }
+
+    return highestSeverity;
+  }
+
+  // Format type button - End
+
+  // Lấy số lượng - Start
+  public highestSeverityMessages(requiredError: boolean): string {
+    // Lấy loại severity button cao nhất từ formatter
+    const highestSeverityButtonType = this.buttonTypeFormatter(requiredError);
+
+    // Map ButtonType mới sang Message type
+    let highestSeverityMessageType: string;
+
+    switch (highestSeverityButtonType) {
+        case ButtonType.Reject: {
+          highestSeverityMessageType = "Error";
+
+          break;
+        }   
+        case ButtonType.Attention: {
+          highestSeverityMessageType = "Warning";
+
+          break;
+        }
+        case ButtonType.Accept: {
+          highestSeverityMessageType = "Success";
+
+          break;
+        }
+        default: {
+          highestSeverityMessageType = "Information";
+
+          break;
+        }
+    }
+
+    // Đếm số message có type = highestSeverityMessageType
+    this.mangBatBuoc.push(requiredError);
+
+    let dem = "4"; //demSoLuong > 0 ? String(demSoLuong) : "";
+
+    // Trả về số lượng dưới dạng string, hoặc "" nếu = 0
+    // return demSoLuong > 0 ? String(demSoLuong) : "";
+    return dem;
+  }
+  // Lấy số lượng - End
+
+  // Format icon - Start
+  public buttonIconFormatter(requiredError: boolean): string {
+    let icon: string | undefined;
+
+    if (requiredError) {
+      icon = "sap-icon://error";
+    } else {
+      icon = "sap-icon://information";
+    }
+
+
+    return icon ?? "sap-icon://information";
+  }
+
+  // Format icon - End
+
+  // Khi click vào btn - Start
+  public handleMessagePopoverPress(event: Event): void {
+    const oButton = event.getSource() as any;
+
+    if (!this.MP) {
+        this.createMessagePopover();
+    }
+
+    // MessagePopover mở ra ở dưới nút
+    this.MP.toggle(oButton);
+
+    // Force bottom alignment bằng CSS (nếu muốn)
+    // const $pop = this.MP.$(); // jQuery element của MessagePopover
+    // if ($pop) {
+    //     $pop.css({
+    //         top: `${oButton.getDomRef().getBoundingClientRect().bottom + 1}px`,
+    //         left: `${oButton.getDomRef().getBoundingClientRect().left}px`
+    //     });
+    // }
+  }
+  // Khi click vào btn - End
+
+  // #endregion
+
 }

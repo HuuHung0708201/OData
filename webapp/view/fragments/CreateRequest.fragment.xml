@@ -88,7 +88,29 @@
                 />
             </form:SimpleForm>
         </content>
-        <beginButton>
+        <buttons>
+           <!-- Button ẩn -->
+            <Button
+                id="messagePopoverBtn"
+                press="handleMessagePopoverPress"
+                ariaHasPopup="Dialog"
+                visible="false"
+                type="{ path: 'message>/', formatter: '.buttonTypeFormatter' }"
+                text= "{path: 'message>/', formatter: '.highestSeverityMessages' }"
+                icon="{ path: 'message>/', formatter: '.buttonIconFormatter' }"
+            />
+
+            <Button
+                text="Submit"
+                type="Emphasized"
+                press="onSubmitCreateRequest"
+            />
+            <Button
+                text="Cancel"
+                press="onCloseCreateRequest"
+            />
+        </buttons>
+        <!-- <beginButton>
             <Button
                 text="Submit"
                 type="Emphasized"
@@ -100,6 +122,6 @@
                 text="Cancel"
                 press="onCloseCreateRequest"
             />
-        </endButton>
+        </endButton> -->
     </Dialog>
 </core:FragmentDefinition>
